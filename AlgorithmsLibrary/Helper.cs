@@ -31,10 +31,5 @@ namespace AlgorithmsLibrary
 			}
 			return old_r;
 		}
-
-
-		
-
-
 	}
 }
