@@ -38,16 +38,16 @@ namespace AlgorithmsLibrary
 
         static public (PublicKey publicKey, PrivateKey privateKey) GenerateKeys(int sizeInBytes)
         {
-            if (sizeInBytes < 0) throw new ArgumentException(
+            if (sizeInBytes <= 0) throw new ArgumentException(
                 $"{nameof(sizeInBytes)} must be positive.");
 
-            BigInteger p, q;
+            BigInteger p = GeneratePrimeNumber(sizeInBytes);
+            BigInteger q = GeneratePrimeNumber(sizeInBytes);
 
-            do
+            while (q == p)
             {
-                p = GeneratePrimeNumber(sizeInBytes);
                 q = GeneratePrimeNumber(sizeInBytes);
-            } while (p == q);
+            }
 
             BigInteger n = p * q;
             BigInteger phi_n = (p - 1) * (q - 1);
@@ -58,21 +58,25 @@ namespace AlgorithmsLibrary
         static public (PublicKey publicKey, PrivateKey privateKey) GenerateKeys(int sizeInBytes,
             BigInteger fixedE)
         {
-            if (sizeInBytes < 0) throw new ArgumentException(
+            if (sizeInBytes <= 0) throw new ArgumentException(
                 $"{nameof(sizeInBytes)} must be positive.");
-            if (fixedE <= 0) throw new ArgumentException();
-            
+            if (fixedE <= 1) throw new ArgumentException();
+
             BigInteger n, phi_n, d;
-            bool isEqual;
 
             do
             {
                 BigInteger p = GeneratePrimeNumber(sizeInBytes);
                 BigInteger q = GeneratePrimeNumber(sizeInBytes);
-                isEqual = (p == q);
+
+                while (q == p)
+                {
+                    q = GeneratePrimeNumber(sizeInBytes);
+                }
+
                 n = p * q;
                 phi_n = (p - 1) * (q - 1);
-            } while (isEqual || !Helper.ExtendedGCD(fixedE, phi_n, out d, out _).IsOne);
+            } while (!Helper.ExtendedGCD(fixedE, phi_n, out d, out _).IsOne);
 
             if (d.Sign < 0) d += phi_n;
             return (new PublicKey(fixedE, n), new PrivateKey(d, n));
@@ -105,8 +109,8 @@ namespace AlgorithmsLibrary
                 random.NextBytes(buffer);
                 e = new BigInteger(buffer);
                 if (e.Sign < 0) e = -e;
-            } while (!((!e.IsZero) && e < phi_n &&
-                        Helper.ExtendedGCD(e, phi_n, out d, out _).IsOne));
+                e %= phi_n;
+            } while (e.IsZero || (!Helper.ExtendedGCD(e, phi_n, out d, out _).IsOne));
 
             if (d.Sign < 0) d += phi_n;
             return (e, d);

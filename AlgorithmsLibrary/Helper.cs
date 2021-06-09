@@ -32,20 +32,9 @@ namespace AlgorithmsLibrary
 			return old_r;
 		}
 
-		public static BigInteger GCD(BigInteger a, BigInteger b)
-        {
-			if (a.IsZero) return b;
-			if (b.IsZero) return a;
 
-			while (!b.IsZero)
-            {
-				a %= b;
-				BigInteger temp = a;
-				a = b;
-				b = temp;
-            }
+		
 
-			return a;
-        }
+
 	}
 }
